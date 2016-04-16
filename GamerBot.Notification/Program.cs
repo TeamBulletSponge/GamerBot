@@ -19,6 +19,11 @@ namespace GamerBot.Notification
       string channelOverride = ConfigurationManager.AppSettings["SlackChannelOverride"];
       string tokenList = ConfigurationManager.AppSettings["GamerTokenList"];
 
+      Console.Out.WriteLine("Auth: " + !String.IsNullOrEmpty(auth));
+      Console.Out.WriteLine("Slack: " + slackChannelEndPoint);
+      Console.Out.WriteLine("Channel Override: " + channelOverride);
+      Console.Out.WriteLine("Token List: " + tokenList);
+
       TimeSpan checkInterval = TimeSpan.FromMinutes(Convert.ToDouble(ConfigurationManager.AppSettings["PollingInterval"]));
 
       while (true)
