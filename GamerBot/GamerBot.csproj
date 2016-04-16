@@ -95,6 +95,9 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="App_Data\jobs\continuous\notification\GamerBot.Notification.exe" />
+    <Content Include="App_Data\jobs\continuous\notification\Microsoft.Rest.ClientRuntime.dll" />
+    <Content Include="App_Data\jobs\continuous\notification\Newtonsoft.Json.dll" />
     <Content Include="default.htm" />
     <Content Include="Global.asax" />
     <Content Include="Web.config" />
@@ -109,6 +112,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
+    <Content Include="App_Data\jobs\continuous\notification\GamerBot.Notification.exe.config" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
