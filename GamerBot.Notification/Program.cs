@@ -50,7 +50,6 @@ namespace GamerBot.Notification
                 string message = "{" + (!String.IsNullOrEmpty(channelOverride) ? "\"channel\": \"" + channelOverride + "\", " : "") + "\"attachments\": [{\"fallback\": \"" + activityItem.gamertag + " unlocked an achievement\", \"title\": \"" + activityItem.gamertag + " unlocked an achievement for " + activityItem.gamerscore + " gamerscore\", \"thumb_url\": \"" + activityItem.activity.achievementIcon + "&format=png&w=128&h=128\", \"fields\": [{\"title\": \"Title\", \"value\": \"" + activityItem.itemText + "\"},{\"title\": \"Description\", \"value\": \"" + activityItem.achievementDescription + "\"}]}]}";
 
                 SendMessage(slackChannelEndPoint, message);
-                break;
               }
 
             }
