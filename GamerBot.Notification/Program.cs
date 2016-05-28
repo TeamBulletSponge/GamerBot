@@ -25,40 +25,45 @@ namespace GamerBot.Notification
       Console.Out.WriteLine("Token List: " + tokenList);
 
       TimeSpan checkInterval = TimeSpan.FromMinutes(Convert.ToDouble(ConfigurationManager.AppSettings["PollingInterval"]));
+      TimeZoneInfo easternZone = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
 
       while (true)
       {
-        DateTime pollStart = DateTime.Now;
-        Console.Out.WriteLine(pollStart.ToShortTimeString() + " Polling");
+        DateTime pollStart = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, easternZone);
+        Console.Out.WriteLine(pollStart.ToShortTimeString() + " EST Polling");
 
-        foreach (string token in tokenList.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+        bool quietTime = (pollStart.DayOfWeek != DayOfWeek.Saturday && pollStart.DayOfWeek != DayOfWeek.Sunday
+          && pollStart.Hour > 6 && pollStart.Hour < 17);  // 7am to 5pm eastern
+
+        if (!quietTime)
         {
-          using (WebClient webClient = new WebClient())
+          foreach (string token in tokenList.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
           {
-            webClient.Headers.Add("X-AUTH", auth);
-            webClient.Headers.Add("Accept-Language", "en-US");
-            var json = webClient.DownloadString("https://xboxapi.com/v2/" + token + "/activity");
-
-            try
+            using (WebClient webClient = new WebClient())
             {
-              RootObject result = new JavaScriptSerializer().Deserialize<RootObject>(json);
+              webClient.Headers.Add("X-AUTH", auth);
+              webClient.Headers.Add("Accept-Language", "en-US");
+              var json = webClient.DownloadString("https://xboxapi.com/v2/" + token + "/activity");
 
-              foreach (var activityItem in result.activityItems
-                      .Where(item_ => !String.IsNullOrEmpty(item_.date) && item_.activityItemType == "Achievement" && DateTime.Parse(item_.date) > pollStart.Subtract(checkInterval))
-                      .OrderByDescending(item_ => DateTime.Parse(item_.date)))
+              try
               {
-                string message = "{" + (!String.IsNullOrEmpty(channelOverride) ? "\"channel\": \"" + channelOverride + "\", " : "") + "\"attachments\": [{\"fallback\": \"" + activityItem.gamertag + " unlocked an achievement\", \"title\": \"" + activityItem.gamertag + " unlocked an achievement for " + activityItem.gamerscore + " gamerscore\", \"thumb_url\": \"" + activityItem.activity.achievementIcon + "&format=png&w=128&h=128\", \"fields\": [{\"title\": \"Title\", \"value\": \"" + activityItem.itemText + "\"},{\"title\": \"Description\", \"value\": \"" + activityItem.achievementDescription + "\"}]}]}";
+                RootObject result = new JavaScriptSerializer().Deserialize<RootObject>(json);
 
-                SendMessage(slackChannelEndPoint, message);
+                foreach (var activityItem in result.activityItems
+                        .Where(item_ => !String.IsNullOrEmpty(item_.date) && item_.activityItemType == "Achievement" && DateTime.Parse(item_.date) > pollStart.Subtract(checkInterval))
+                        .OrderByDescending(item_ => DateTime.Parse(item_.date)))
+                {
+                  string message = "{" + (!String.IsNullOrEmpty(channelOverride) ? "\"channel\": \"" + channelOverride + "\", " : "") + "\"attachments\": [{\"fallback\": \"" + activityItem.gamertag + " unlocked an achievement\", \"title\": \"" + activityItem.gamertag + " unlocked an achievement for " + activityItem.gamerscore + " gamerscore\", \"thumb_url\": \"" + activityItem.activity.achievementIcon + "&format=png&w=128&h=128\", \"fields\": [{\"title\": \"Title\", \"value\": \"" + activityItem.itemText + "\"},{\"title\": \"Description\", \"value\": \"" + activityItem.achievementDescription + "\"}]}]}";
+
+                  SendMessage(slackChannelEndPoint, message);
+                }
+
               }
-
+              catch (Exception ex)
+              {
+                Console.Error.WriteLine(ex.Message);
+              }
             }
-            catch (Exception ex)
-            {
-              Console.Error.WriteLine(ex.Message);
-              continue;
-            }
-
           }
         }
 
