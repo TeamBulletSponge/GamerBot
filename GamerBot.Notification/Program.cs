@@ -30,10 +30,11 @@ namespace GamerBot.Notification
       while (true)
       {
         DateTime pollStart = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, easternZone);
-        Console.Out.WriteLine(pollStart.ToShortTimeString() + " EST Polling");
 
         bool quietTime = (pollStart.DayOfWeek != DayOfWeek.Saturday && pollStart.DayOfWeek != DayOfWeek.Sunday
           && pollStart.Hour > 6 && pollStart.Hour < 17);  // 7am to 5pm eastern
+
+        Console.Out.WriteLine(pollStart.ToShortTimeString() + " EST Polling" + ((quietTime) ? " (quiet time)" : ""));
 
         if (!quietTime)
         {
