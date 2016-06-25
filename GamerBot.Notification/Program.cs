@@ -60,8 +60,8 @@ namespace GamerBot.Notification
                 }
 
                 foreach (var activityItem in result.activityItems
-                        .Where(item_ => !String.IsNullOrEmpty(item_.date) && (item_.activityItemType == "Achievement" || item_.activityItemType == "GameDVR") && DateTime.Parse(item_.date) > pollStart.Subtract(checkInterval))
-                        .OrderByDescending(item_ => DateTime.Parse(item_.date)))
+                        .Where(item_ => !String.IsNullOrEmpty(item_.activity.date) && (item_.activityItemType == "Achievement" || item_.activityItemType == "GameDVR") && DateTime.Parse(item_.activity.date) > pollStart.Subtract(checkInterval))
+                        .OrderByDescending(item_ => DateTime.Parse(item_.activity.date)))
                 {
                   string message = null;
 
