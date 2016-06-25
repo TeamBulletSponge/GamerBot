@@ -18,13 +18,16 @@ namespace GamerBot.Notification
       string slackChannelEndPoint = ConfigurationManager.AppSettings["SlackEndPoint"];
       string channelOverride = ConfigurationManager.AppSettings["SlackChannelOverride"];
       string tokenList = ConfigurationManager.AppSettings["GamerTokenList"];
+      string pollingInterval = ConfigurationManager.AppSettings["PollingInterval"];
+
 
       Console.Out.WriteLine("Auth: " + !String.IsNullOrEmpty(auth));
       Console.Out.WriteLine("Slack: " + slackChannelEndPoint);
       Console.Out.WriteLine("Channel Override: " + channelOverride);
       Console.Out.WriteLine("Token List: " + tokenList);
+      Console.Out.WriteLine("Polling Interval: " + pollingInterval);
 
-      TimeSpan checkInterval = TimeSpan.FromMinutes(Convert.ToDouble(ConfigurationManager.AppSettings["PollingInterval"]));
+      TimeSpan checkInterval = TimeSpan.FromMinutes(!String.IsNullOrEmpty(pollingInterval) ? Convert.ToDouble(pollingInterval) : 15);
       TimeZoneInfo easternZone = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
 
       while (true)
@@ -51,13 +54,29 @@ namespace GamerBot.Notification
               {
                 RootObject result = new JavaScriptSerializer().Deserialize<RootObject>(json);
 
+                if (result.activityItems == null)
+                {
+                  continue;
+                }
+
                 foreach (var activityItem in result.activityItems
-                        .Where(item_ => !String.IsNullOrEmpty(item_.date) && item_.activityItemType == "Achievement" && DateTime.Parse(item_.date) > pollStart.Subtract(checkInterval))
+                        .Where(item_ => !String.IsNullOrEmpty(item_.date) && (item_.activityItemType == "Achievement" || item_.activityItemType == "GameDVR") && DateTime.Parse(item_.date) > pollStart.Subtract(checkInterval))
                         .OrderByDescending(item_ => DateTime.Parse(item_.date)))
                 {
-                  string message = "{" + (!String.IsNullOrEmpty(channelOverride) ? "\"channel\": \"" + channelOverride + "\", " : "") + "\"attachments\": [{\"fallback\": \"" + activityItem.gamertag + " unlocked an achievement\", \"title\": \"" + activityItem.gamertag + " unlocked an achievement for " + activityItem.gamerscore + " gamerscore\", \"thumb_url\": \"" + activityItem.activity.achievementIcon + "&format=png&w=128&h=128\", \"fields\": [{\"title\": \"Title\", \"value\": \"" + activityItem.itemText + "\"},{\"title\": \"Description\", \"value\": \"" + activityItem.achievementDescription + "\"}]}]}";
+                  string message = null;
 
-                  SendMessage(slackChannelEndPoint, message);
+                  switch (activityItem.activityItemType)
+                  {
+                    case "Achievement":
+                      message = "{" + (!String.IsNullOrEmpty(channelOverride) ? "\"channel\": \"" + channelOverride + "\", " : "") + "\"attachments\": [{\"fallback\": \"" + activityItem.gamertag + " unlocked an achievement\", \"title\": \"" + activityItem.gamertag + " unlocked an achievement for " + activityItem.gamerscore + " gamerscore\", \"thumb_url\": \"" + ((activityItem.activity != null) ? activityItem.activity.achievementIcon : "") + "&format=png&w=128&h=128\", \"fields\": [{\"title\": \"Title\", \"value\": \"" + activityItem.itemText + "\"},{\"title\": \"Description\", \"value\": \"" + activityItem.achievementDescription + "\"}]}]}";
+                      break;
+
+                    case "GameDVR":
+                      message = "{" + (!String.IsNullOrEmpty(channelOverride) ? "\"channel\": \"" + channelOverride + "\", " : "") + "\"attachments\": [{\"fallback\": \"" + activityItem.gamertag + " " + activityItem.shortDescription + "\", \"title\": \"" + activityItem.gamertag + " " + activityItem.shortDescription + "\", \"title_link\": \"" + activityItem.downloadUri  + "\", \"thumb_url\": \"" + activityItem.clipThumbnail + "&format=png&w=128&h=128\", \"fields\": [{\"title\": \"Title\", \"value\": \"" + activityItem.itemText + "\"}]}]}";
+                      break;
+                  }
+
+                  SendMessage(slackChannelEndPoint, message);          
                 }
 
               }
