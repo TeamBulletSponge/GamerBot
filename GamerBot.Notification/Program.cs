@@ -72,7 +72,7 @@ namespace GamerBot.Notification
                       break;
 
                     case "GameDVR":
-                      message = "{" + (!String.IsNullOrEmpty(channelOverride) ? "\"channel\": \"" + channelOverride + "\", " : "") + "\"attachments\": [{\"fallback\": \"" + activityItem.gamertag + " " + activityItem.shortDescription + "\", \"title\": \"" + activityItem.gamertag + " " + activityItem.shortDescription + "\", \"title_link\": \"" + activityItem.downloadUri  + "\", \"thumb_url\": \"" + activityItem.clipThumbnail + "&format=png&w=128&h=128\", \"fields\": [{\"title\": \"Title\", \"value\": \"" + activityItem.itemText + "\"}]}]}";
+                      message = "{" + (!String.IsNullOrEmpty(channelOverride) ? "\"channel\": \"" + channelOverride + "\", " : "") + "\"attachments\": [{\"fallback\": \"" + activityItem.gamertag + " " + activityItem.shortDescription + "\", \"title\": \"" + activityItem.gamertag + " " + activityItem.shortDescription + "\", \"title_link\": \"http://xboxclips.com/" + activityItem.gamertag + "/" + activityItem.clipId  + "\", \"thumb_url\": \"" + activityItem.clipThumbnail + "&format=png&w=128&h=128\", \"fields\": [{\"title\": \"Title\", \"value\": \"" + activityItem.itemText + "\"}]}]}";
                       break;
                   }
 
