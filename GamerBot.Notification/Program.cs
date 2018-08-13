@@ -30,6 +30,8 @@ namespace GamerBot.Notification
       TimeSpan checkInterval = TimeSpan.FromMinutes(!String.IsNullOrEmpty(pollingInterval) ? Convert.ToDouble(pollingInterval) : 15);
       TimeZoneInfo easternZone = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
 
+      ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12 | SecurityProtocolType.Ssl3;
+
       while (true)
       {
         DateTime pollStart = DateTime.Now;
